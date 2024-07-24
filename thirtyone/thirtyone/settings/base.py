@@ -1,8 +1,9 @@
 from pathlib import Path
 import os
 import json
+from django.core.exceptions import ImproperlyConfigured
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
-BASE_DIR = Path(__file__).resolve().parent.parent
+BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
 
 # secrets.json 파일에서 시크릿 키 값 로드하기
