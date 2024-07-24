@@ -1,0 +1,8 @@
+venv
+db.sqlite3
+migrations
+.DS_Store
+__pycache__
+secrets.json
+db_backup.sqlite3
+media
