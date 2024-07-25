@@ -6,3 +6,5 @@ class BuySerializer(serializers.ModelSerializer):
     class Meta:
         model = Buyer
         fields = ['id','name']
+
+
