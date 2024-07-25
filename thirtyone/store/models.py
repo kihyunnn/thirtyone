@@ -84,28 +84,37 @@ class Store(models.Model):
 
 
 #상품 카테고리 모델 ProductType
-class ProductType(models.Model):
-    class ProductCategory(models.TextChoices):
-        BAKERY = 'BAK', '빵 & 간식류'
-        BUTCHER_SHOP = 'BUT', '정육 제품'
-        FRUITS = 'FRU', '과일류'
-        VEGETABLES = 'VEG', '채소류'
-        SIDE_DISH_STORE = 'SID', '반찬 가게'
-        SNACKS = 'ETC', '기타'
+# class ProductType(models.Model):
+#     class ProductCategory(models.TextChoices):
+#         BAKERY = 'BAK', '빵 & 간식류'
+#         BUTCHER_SHOP = 'BUT', '정육 제품'
+#         FRUITS = 'FRU', '과일류'
+#         VEGETABLES = 'VEG', '채소류'
+#         SIDE_DISH_STORE = 'SID', '반찬 가게'
+#         SNACKS = 'ETC', '기타'
 
-    part = models.CharField(
-        max_length=3,  # 최대 3자까지 허용(BAK이런거)
-        choices=ProductCategory.choices, # 선택지를 ProductCategory 클래스에서 가져옴
-        default=ProductCategory.BAKERY, # 기본값을 '빵 & 간식류'로 설정
-    )
+#     part = models.CharField(
+#         max_length=3,  # 최대 3자까지 허용(BAK이런거)
+#         choices=ProductCategory.choices, # 선택지를 ProductCategory 클래스에서 가져옴
+#         default=ProductCategory.BAKERY, # 기본값을 '빵 & 간식류'로 설정
+#     )
 
 
-    def __str__(self):
-        return self.name
+#     def __str__(self):
+#         return self.name
 
 
 #떨이상품 모델 SaleProduct 
 class SaleProduct(models.Model):
+    TYPE_CHOICES = [
+        ('BAK', '빵 & 간식류'),
+        ('BUT', '정육 제품'),
+        ('FRU', '과일류'),
+        ('VEG', '채소류'),
+        ('SID', '반찬 가게'),
+        ('BUT', '정육점'),
+        ('ETC', '기타'),
+    ]
     name = models.CharField(max_length=255) # 떨이 상품명
     amount = models.IntegerField() # 떨이 수량
     photo = models.ImageField(upload_to='SaleProduct_phothos') # 떨이 상품 사진
@@ -116,7 +125,7 @@ class SaleProduct(models.Model):
     # 판매자(Store) : 떨이상품(SaleProduct) = 1 : N
     store = models.ForeignKey(Store, on_delete=models.CASCADE)
     #상품 카테고리(ProductType) : 떨이 상품(SaleProduct)   = 1 : N
-    product_type = models.ForeignKey(ProductType,on_delete=models.CASCADE)
+    product_type = models.CharField(max_length=3, choices=TYPE_CHOICES)
 
     def __str__(self):
         return self.get_part_display()  # 선택된 값의 레이블 반환
