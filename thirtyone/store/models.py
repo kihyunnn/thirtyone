@@ -6,11 +6,19 @@ from buyer.models import Buyer #주문서에 구매자 pk넣기위해서
 
 #판매자 코드 생성 함수
 def generate_code():
-    used_codes = Store.objects.values_list('store_code', flat=True)
+    used_codes = Store.objects.values_list('code', flat=True)# 이미 사용된 코드들 집합으로 만듦
     for letter in string.ascii_uppercase:
         if letter not in used_codes:
             return letter
     raise ValueError("모든 알파벳 코드를 사용했습니다.")
+
+
+# 기본 StoreType 생성 함수
+#밑에 Store에서 StoreType 외래키로 받을 때 default 값을 1로 했을 떄 StoreType에 객체가 먼저 생성이 안되어서 오류가 생겨서 일케함
+def get_default_store_type_id():
+    store_type, created = StoreType.objects.get_or_create(part=StoreType.StoreCategory.FRUITS_VEGETABLES)
+    return store_type.id
+
 
 #가게 업종 모델 StoreType
 class StoreType(models.Model):
@@ -44,10 +52,11 @@ class Store(models.Model):
     tel = models.CharField(max_length=255) # 가게 전화번호
     latitude = models.FloatField(default=0.0)  # 위도
     longitude = models.FloatField(default=0.0)  # 경도
-    code = models.CharField(max_length=1, unique=True, editable=False,default='A')  # 가게 고유 알파벳 코드
+    code = models.CharField(max_length=1, unique=True, editable=False)  # 가게 고유 알파벳 코드
 
     # 판매자(Store) : 가게업종(StoreType) = N : 1
-    store_type = models.ForeignKey(StoreType, on_delete=models.CASCADE,default=1)
+    type = models.ForeignKey(StoreType, on_delete=models.CASCADE, default=get_default_store_type_id)
+
 
     #새로운 Store객체를 저장 할 때, store_code가 없으면, 다시 호출해서 설정함
     def save(self, *args, **kwargs):
@@ -127,8 +136,7 @@ class Order(models.Model):
         AUTO_CANCEL = 'AUT', '자동취소'
         PICUP_COMP = 'COM', '픽업완료'
         ORDER_REJ = 'REJ', '주문거절'
-    buy_step = models.CharField(max_length=20)  # 구매 처리 단계 이름을 저장하는 필드
-    part = models.CharField(
+    buy_step = models.CharField(
         max_length=3,  # 최대 3자까지 허용
         choices=OrderStepCategory.choices, # 선택지를  OrderStepCategory 클래스에서 가져옴
         default=OrderStepCategory.PICKUP_PEND, # 기본값을 '픽업대기중'으로 설정
@@ -149,7 +157,7 @@ class Order(models.Model):
             else:
                 new_order_number = 1
             # 가게의 고유 코드(store_code)와 새로운 순차 번호를 결합하여 주문서 번호 생성
-            self.order_number = f"{self.store.store_code}{new_order_number}"
+            self.order_number = f"{self.store.code}{new_order_number}"
         super().save(*args, **kwargs) #객체 저장
 
 
