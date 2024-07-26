@@ -10,10 +10,9 @@ class BuySerializer(serializers.ModelSerializer):
 
 #주문서 작성 시리얼 라이저
 class OrderCreateSerializer(serializers.ModelSerializer):
-    sale_product = serializers.PrimaryKeyRelatedField(queryset=SaleProduct.objects.all(), write_only=True) #SaleProduct의 pk 가져오기
     class Meta:
         model = Order
-        fields = ['sale_product','amount']
+        fields = ['amount','store', 'sale_product',]
 
 #주문서 반환 시리얼라이저
 class OrderDeailSerializer(serializers.ModelSerializer):

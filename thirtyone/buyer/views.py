@@ -1,9 +1,9 @@
 from django.shortcuts import get_object_or_404, render
 from rest_framework.response import Response
-from rest_framework import generics
+from rest_framework import generics, status
 from .models import Buyer
 from .serializers import * # Buyer앱의 시리얼라이저 가져오기
-from store.models import SaleProduct, Order # Sotre 앱에서 모델 가져옴. SaleProduct
+from store.models import SaleProduct, Order, Store # Sotre 앱에서 모델 가져옴. SaleProduct
 
 # Create your views here.
 
@@ -17,13 +17,29 @@ class OrderCreateView(generics.CreateAPIView):
     queryset = Order.objects.all() #모든 주문서 객체
     serializer_class = OrderCreateSerializer #주문서 생성 시리얼라이저 사용
     
-    def post(self,request,*args, **kwargs):
+    def post(self, request, *args, **kwargs):
         sale_product_pk = self.kwargs['pk']  # URL에서 떨이 상품 pk 가져오기
-        sale_product = get_object_or_404(SaleProduct, pk=sale_product_pk) #SaleProduct 모델에서 해당 pk 객체 찾기, 없으면 404 반환
-        data = request.data.copy() #요청본문을 복사함
+        sale_product = get_object_or_404(SaleProduct, pk=sale_product_pk)  # SaleProduct 모델에서 해당 pk 객체 찾기, 없으면 404 반환
+        data = request.data.copy()  # 요청 본문을 복사함
         data['sale_product'] = sale_product.pk
-        serializers = self.get_serializer(data=data) #수정된 데이터로 시리얼라이저 초기화
-        serializers.is_valid(raise_exception=True) # 시리얼라이저 유효성 검사
-        self.perform_create(serializers) #유효한 데이터 저장
-        headers = self.get_success_headers(serializers.data)
-        return Response(serializers.data, status=201, headers=headers)
+        data['store'] = sale_product.store.pk  # store 필드를 자동으로 추가
+        
+        # 주문 수량을 정수로 변환
+        order_amount = int(data['amount'])
+
+        if order_amount > sale_product.amount: # 주문 수량이 재고보다 많으면 오류 반환
+            return Response(
+                {"error": "주문 수량이 재고보다 많습니다."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        # 재고 감소 ->아 요거는 픽업 대기중으로 변경 될 떄 감소해야하는구나
+        # sale_product.amount -= order_amount  # 주문 수량만큼 떨이 상품 수량 감소
+        sale_product.save()  # 변경사항 저장
+
+        serializer = self.get_serializer(data=data)
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
+        
+        headers = self.get_success_headers(serializer.data)
+        return Response(serializer.data, status=201, headers=headers)
