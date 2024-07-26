@@ -128,7 +128,7 @@ class SaleProduct(models.Model):
     product_type = models.CharField(max_length=3, choices=TYPE_CHOICES)
 
     def __str__(self):
-        return self.get_part_display()  # 선택된 값의 레이블 반환
+        return self.name  # 선택된 값의 레이블 반환
 
 
 
@@ -141,7 +141,7 @@ class SaleRecord(models.Model):
     sale_product = models.ForeignKey(SaleProduct, on_delete=models.CASCADE)
 
     def __str__(self):
-        return self.content    
+        return self.amount    
 
 
 #주문 모델 Order

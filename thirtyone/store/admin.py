@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Store, Order
+from .models import Store, Order, SaleProduct, SaleRecord
 
 # Register your models here.
 
@@ -17,3 +17,14 @@ class StoreAdmin(admin.ModelAdmin):
     list_display = ('name', 'code', 'address', 'open_time', 'close_time', 'tel')
 
 admin.site.register(Store, StoreAdmin)
+
+class SaleProductAdmin(admin.ModelAdmin):
+    list_display = ('store', 'name', 'amount', 'price', 'sale_price', 'content', 'product_type')
+
+admin.site.register(SaleProduct, SaleProductAdmin)
+
+
+class SaleRecordAdmin(admin.ModelAdmin):
+    list_display = ('sale_product', 'date', 'amount')
+
+admin.site.register(SaleRecord, SaleRecordAdmin)
