@@ -190,7 +190,10 @@ class Order(models.Model):
 
 
         super().save(*args, **kwargs) #객체 저장
-
+    
+    #Order에 str 반환 뺴먹어서 추가
+    def __str__(self):
+        return f"Order {self.order_number} for {self.buyer}"
 
 
 
