@@ -1,7 +1,7 @@
 from django.db import models
 import string #가게 번호 코드 부여하려고 추가함
 from buyer.models import Buyer #주문서에 구매자 pk넣기위해서
-
+from django.utils import timezone #주문 수락 시간추가위해서
 # Create your models here.
 
 #판매자 코드 생성 함수
@@ -152,10 +152,10 @@ class Order(models.Model):
     #판매자(Store) : 주문(Order) = 1 : N
     store = models.ForeignKey(Store, on_delete=models.CASCADE)  # 가게 외래키
     buyer = models.ForeignKey(Buyer, on_delete=models.CASCADE,default=1)  # 구매자 외래키
-
+    amount = models.IntegerField(default=0) #주문 수량
     class OrderStepCategory(models.TextChoices): # 구매 처리 단계를 위한 클래스
-        PICKUP_PEND = 'PIC', '픽업대기중'
         RES_PEND = 'RES', '예약확인중'
+        PICKUP_PEND = 'PIC', '픽업대기중'
         AUTO_CANCEL = 'AUT', '자동취소'
         PICUP_COMP = 'COM', '픽업완료'
         ORDER_REJ = 'REJ', '주문거절'
@@ -164,7 +164,7 @@ class Order(models.Model):
         choices=OrderStepCategory.choices, # 선택지를  OrderStepCategory 클래스에서 가져옴
         default=OrderStepCategory.PICKUP_PEND, # 기본값을 '픽업대기중'으로 설정
     )
-
+    accept_at = models.DateTimeField(null=True, blank=True) #픽업대기중으로 수정된 시간
     
 
     #주문서 번호 생성 로직
@@ -181,6 +181,14 @@ class Order(models.Model):
                 new_order_number = 1
             # 가게의 고유 코드(store_code)와 새로운 순차 번호를 결합하여 주문서 번호 생성
             self.order_number = f"{self.store.code}{new_order_number}"
+
+        if self.pk:  # 객체가 이미 존재하는 경우
+            old_order = Order.objects.get(pk=self.pk)  # 기존 객체를 데이터베이스에서 가져옴
+            # 기존 객체의 buy_step와 현재 객체의 buy_step가 다르고, 현재 buy_step가 RES_PEND인 경우
+            if old_order.buy_step != self.buy_step and self.buy_step == self.OrderStepCategory.RES_PEND:
+                self.accept_at = timezone.now()  # accept_at 필드에 현재 시간을 기록
+
+
         super().save(*args, **kwargs) #객체 저장
 
 
