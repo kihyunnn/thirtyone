@@ -4,6 +4,7 @@ from .models import Store, Order
 # Register your models here.
 
 
+#admin.site.register(StoreType)
 
 # 어드민에서 주문서에서 세부 내역 더 보고싶어서 추가함
 class OrderAdmin(admin.ModelAdmin):
