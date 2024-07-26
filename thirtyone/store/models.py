@@ -128,7 +128,7 @@ class SaleProduct(models.Model):
     product_type = models.CharField(max_length=3, choices=TYPE_CHOICES)
 
     def __str__(self):
-        return self.get_part_display()  # 선택된 값의 레이블 반환
+        return self.name
 
 
 
@@ -190,7 +190,10 @@ class Order(models.Model):
 
 
         super().save(*args, **kwargs) #객체 저장
-
+    
+    #Order에 str 반환 뺴먹어서 추가
+    def __str__(self):
+        return f"Order {self.order_number} for {self.buyer}"
 
 
 

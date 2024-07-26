@@ -1,10 +1,7 @@
 from django.contrib import admin
-from .models import Store, Order
+from .models import Store, Order, SaleProduct
 
 # Register your models here.
-
-
-#admin.site.register(StoreType)
 
 # 어드민에서 주문서에서 세부 내역 더 보고싶어서 추가함
 class OrderAdmin(admin.ModelAdmin):
@@ -17,3 +14,9 @@ class StoreAdmin(admin.ModelAdmin):
     list_display = ('name', 'code', 'address', 'open_time', 'close_time', 'tel')
 
 admin.site.register(Store, StoreAdmin)
+
+#떨이 상품 admin 페이지 등록
+class SaleProductAdmin(admin.ModelAdmin):
+    list_display = ('name', 'amount')
+    
+admin.site.register(SaleProduct, SaleProductAdmin)
