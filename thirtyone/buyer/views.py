@@ -43,3 +43,15 @@ class OrderCreateView(generics.CreateAPIView):
         
         headers = self.get_success_headers(serializer.data)
         return Response(serializer.data, status=201, headers=headers)
+    
+# 주문서 리스트 조회
+class OrderLisetView(generics.ListAPIView):
+    queryset = Order.objects.all()
+    serializer_class = OrderListSerializer
+
+    def get(self, request, *args, **kwargs):
+        return super().get(request, *args, **kwargs)
+
+
+
+

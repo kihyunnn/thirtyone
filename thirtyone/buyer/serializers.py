@@ -19,3 +19,9 @@ class OrderDeailSerializer(serializers.ModelSerializer):
     class Meta:
         model = Order
         fields = '__all__'
+
+# 주문서 리스트 조회 시리얼라이저
+class OrderListSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Order
+        fields = '__all__'
