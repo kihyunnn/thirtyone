@@ -66,4 +66,11 @@ class SaleProductCateListView(generics.ListAPIView):
             raise ValidationError(f"유효하지않은 product_type: {product_type_par}")
         return SaleProduct.objects.filter(product_type=product_type_par)
 
+# 떨이 상품 상세 조회
+class SaleProductDetailView(generics.RetrieveAPIView):
+    queryset = SaleProduct.objects.all()
+    serializer_class = SaleProductDetailSerializer
 
+    def get_object(self):
+        sale_product_pk = self.kwargs['pk']  # URL에서 떨이 상품 pk 가져오기
+        return get_object_or_404(SaleProduct, pk=sale_product_pk)  # SaleProduct 모델에서 해당 pk 객체 찾기, 없으면 404 반환
