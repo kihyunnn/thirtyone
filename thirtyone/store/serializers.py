@@ -17,22 +17,21 @@ class CreateSaleProductSerializer(serializers.ModelSerializer):
         model = SaleProduct
         fields = ['photo', 'name', 'product_type', 'price', 'sale_price', 'amount', 'content']
 
-    # update랑 create는 instance(떨이상품)을 가지고 update_sale_record에 사용하기 위해서 있는 함수 느낌..?
-    def update(self, instance, validated_data):
-        # 떨이 상품이 새로 업데이트 될때 수행됨
-        instance = super().update(instance, validated_data)
-        self.update_sale_record(instance)
-        return instance
+    
 
-    def create(self, validated_data):
-        instance = super().create(validated_data)
-        self.update_sale_record(instance)
-        return instance
+    def save(self, **kwargs):
+        # 새 인스턴스가 생성되거나 기존 인스턴스가 업데이트될 때 호출됨
+        sale_product = super().save(**kwargs)
+        # **kwargs : keyword arguments 예상하지 못한 키워드 인수도 받을 수 있음
+    
+        # SaleRecord 업데이트
+        self.update_sale_record(sale_product)
+
+        return sale_product
 
     def update_sale_record(self, sale_product):
         today = datetime.date.today()
         sale_record, created = SaleRecord.objects.get_or_create(date=today, sale_product=sale_product)
-            
         if created:
             sale_record.amount = sale_product.amount
         else:

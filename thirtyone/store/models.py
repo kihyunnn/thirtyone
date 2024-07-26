@@ -116,10 +116,10 @@ class SaleProduct(models.Model):
         ('ETC', '기타'),
     ]
     name = models.CharField(max_length=255) # 떨이 상품명
-    amount = models.IntegerField() # 떨이 수량
-    photo = models.ImageField(upload_to='SaleProduct_phothos') # 떨이 상품 사진
-    price = models.IntegerField() # 상품 정가
-    sale_price = models.IntegerField() # 상품 할인가
+    amount = models.IntegerField(default=0) # 떨이 수량
+    photo = models.ImageField(upload_to='SaleProduct_phothos', null=True) # 떨이 상품 사진
+    price = models.IntegerField(default=0) # 상품 정가
+    sale_price = models.IntegerField(default=0) # 상품 할인가
     content = models.TextField() # 상품 설명
 
     # 판매자(Store) : 떨이상품(SaleProduct) = 1 : N
@@ -135,13 +135,13 @@ class SaleProduct(models.Model):
 #상품 실적 모델 SaleRecord
 class SaleRecord(models.Model):
     date = models.DateField() #날짜 저장 (시간 저장 안되도 ㄱㅊ으려나??)
-    amount = models.IntegerField() # 상품별 당일 수량 저장
+    amount = models.IntegerField(default=0) # 상품별 당일 수량 저장
 
     #떨이 상품(SaleProduct) : 상품 실적(SaleRecord) = 1 : N
     sale_product = models.ForeignKey(SaleProduct, on_delete=models.CASCADE)
 
     def __str__(self):
-        return self.amount    
+        return f'{self.sale_product.name} - {self.date}'    
 
 
 #주문 모델 Order

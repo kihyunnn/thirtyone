@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Store, Order, SaleProduct, SaleRecord
+from .models import *
 
 # Register your models here.
 

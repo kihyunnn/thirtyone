@@ -23,7 +23,7 @@ def view_store(request):
 @api_view(['POST'])
 def create_product(request, pk):
     store = get_object_or_404(Store, pk=pk)
-    name = request.data.get(name=name)
+    name = request.data.get('name')
     sale_product, created  = SaleProduct.objects.get_or_create(store=store, name=name)
     
     if created:
