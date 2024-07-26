@@ -8,3 +8,5 @@ db_backup.sqlite3
 media
 deploy.py
 .github
+/media/*
+!/media/.gitignore
