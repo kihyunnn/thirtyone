@@ -13,7 +13,7 @@ class OrderCreateSerializer(serializers.ModelSerializer):
     sale_product = serializers.PrimaryKeyRelatedField(queryset=SaleProduct.objects.all(), write_only=True) #SaleProduct의 pk 가져오기
     class Meta:
         model = Order
-        fields = ['amount','sale_product']
+        fields = ['sale_product','amount']
 
 #주문서 반환 시리얼라이저
 class OrderDeailSerializer(serializers.ModelSerializer):
