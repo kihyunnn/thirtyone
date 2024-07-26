@@ -1,9 +1,10 @@
 from pathlib import Path
 import os
 import json
-# Build paths inside the project like this: BASE_DIR / 'subdir'.
-BASE_DIR = Path(__file__).resolve().parent.parent
+from django.core.exceptions import ImproperlyConfigured
 
+# Build paths inside the project like this: BASE_DIR / 'subdir'.
+BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
 # secrets.json 파일에서 시크릿 키 값 로드하기
 secret_file = BASE_DIR / 'secrets.json'
@@ -19,6 +20,10 @@ def get_secret(setting, secrets=secrets):
 
 # 시크릿키와 가져오기
 SECRET_KEY = get_secret('SECRET_KEY')
+
+# 사진들 저장을 위한 미디어 경로 설정
+MEDIA_ROOT = BASE_DIR / 'media'
+MEDIA_URL = '/media/'
 
 
 # SECURITY WARNING: don't run with debug turned on in production!
