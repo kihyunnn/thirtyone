@@ -40,3 +40,8 @@ def create_product(request, pk):
         
     return Response(serializer.errors, status=400)
 
+@api_view(['GET'])
+def list_product(request, pk):
+    store = get_object_or_404(Store, pk=pk)
+    products = SaleProduct.objects.filter(store=store)
+    return Response({'products': list(products.values()), 'store_name':store.name}, status=200)
