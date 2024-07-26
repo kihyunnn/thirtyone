@@ -1,6 +1,7 @@
 from django.shortcuts import get_object_or_404, render
 from rest_framework.response import Response
 from rest_framework import generics, status
+from rest_framework.exceptions import ValidationError #예외처리를 위해 추가
 from .models import Buyer
 from .serializers import * # Buyer앱의 시리얼라이저 가져오기
 from store.models import SaleProduct, Order, Store # Sotre 앱에서 모델 가져옴. SaleProduct
@@ -52,6 +53,17 @@ class OrderLisetView(generics.ListAPIView):
     def get(self, request, *args, **kwargs):
         return super().get(request, *args, **kwargs)
 
+# 카테고리 별 떨이 상품 목록 조회
+class SaleProductCateListView(generics.ListAPIView):
+    serializer_class = SaleProductCategoryListSerializer
 
+    # 유효한 product_type 값 정의
+    VALID_PRODUCT_TYPES = ['FRV', 'BUT', 'BAK', 'SID', 'SEA', 'RIC', 'SNA']
+
+    def get_queryset(self):
+        product_type_par = self.kwargs['product_type']  # URL에서 product_type 가져오기
+        if product_type_par not in self.VALID_PRODUCT_TYPES: # 유효성 검사 로직
+            raise ValidationError(f"유효하지않은 product_type: {product_type_par}")
+        return SaleProduct.objects.filter(product_type=product_type_par)
 
 

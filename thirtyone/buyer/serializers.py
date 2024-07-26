@@ -25,3 +25,9 @@ class OrderListSerializer(serializers.ModelSerializer):
     class Meta:
         model = Order
         fields = '__all__'
+
+#카테고리별 떨이 상품 목록 조회 시리얼 라이저
+class SaleProductCategoryListSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = SaleProduct
+        fields = '__all__'
