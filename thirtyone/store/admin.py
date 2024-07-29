@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Store, Order, SaleProduct
+from .models import *
 
 # Register your models here.
 
@@ -15,8 +15,14 @@ class StoreAdmin(admin.ModelAdmin):
 
 admin.site.register(Store, StoreAdmin)
 
-#떨이 상품 admin 페이지 등록
+
 class SaleProductAdmin(admin.ModelAdmin):
-    list_display = ('name', 'amount')
-    
+    list_display = ('store', 'name', 'amount', 'price', 'sale_price', 'content', 'product_type')
+
 admin.site.register(SaleProduct, SaleProductAdmin)
+
+
+class SaleRecordAdmin(admin.ModelAdmin):
+    list_display = ('sale_product', 'date', 'amount')
+
+admin.site.register(SaleRecord, SaleRecordAdmin)
