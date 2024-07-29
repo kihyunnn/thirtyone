@@ -61,7 +61,6 @@ class SaleProduct(models.Model):
         ('FRU', '과일류'),
         ('VEG', '채소류'),
         ('SID', '반찬 가게'),
-        ('BUT', '정육점'),
         ('ETC', '기타'),
     ]
     name = models.CharField(max_length=255) # 떨이 상품명
