@@ -42,7 +42,7 @@ class OrderListSerializer(serializers.ModelSerializer):
         model = Order
         fields = '__all__'
 
-# 카테고리별 떨이 상품 목록 조회 시리얼 라이저
+# 카테고리별 떨이 상품 목록 조회 시리얼 라이저 / 검색에도 사용
 class SaleProductListSerializer(serializers.ModelSerializer):
     store = StoreSerializer() #store 이름 나오도록 시리얼라이저 중첩
     
@@ -58,3 +58,7 @@ class SaleProductDetailSerializer(serializers.ModelSerializer):
         model = SaleProduct
         fields = '__all__'
 
+class StoreListSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Store
+        fields = '__all__'
