@@ -37,3 +37,8 @@ class CreateSaleProductSerializer(serializers.ModelSerializer):
         else: # 원래 있던 경우는 누적합으로
             sale_record.amount += sale_product.amount
         sale_record.save()
+
+class OrderUpdateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Order
+        fields = ['buy_step']

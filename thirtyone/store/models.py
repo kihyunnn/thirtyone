@@ -147,7 +147,7 @@ class SaleRecord(models.Model):
 #주문 모델 Order
 class Order(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)  # 주문서 생성 시간 작성
-    # 주문서 번호, A1,A2이런거 근데 가게마다 A를 고유로 부여하고, 가게 기준 주문서가 A1,A2쌓이도록 함
+    # 주문서 번호, A1, A2이런거 근데 가게마다 A를 고유로 부여하고, 가게 기준 주문서가 A1,A2쌓이도록 함
     order_number = models.CharField(max_length=10, unique=True, editable=False) 
     #판매자(Store) : 주문(Order) = 1 : N
     store = models.ForeignKey(Store, on_delete=models.CASCADE)  # 가게 외래키
@@ -162,7 +162,7 @@ class Order(models.Model):
     buy_step = models.CharField(
         max_length=3,  # 최대 3자까지 허용
         choices=OrderStepCategory.choices, # 선택지를  OrderStepCategory 클래스에서 가져옴
-        default=OrderStepCategory.PICKUP_PEND, # 기본값을 '픽업대기중'으로 설정
+        default=OrderStepCategory.RES_PEND, # 기본값을 '예약확인중'으로 설정
     )
     accept_at = models.DateTimeField(null=True, blank=True) #픽업대기중으로 수정된 시간
     
@@ -191,7 +191,7 @@ class Order(models.Model):
 
         super().save(*args, **kwargs) #객체 저장
     
-    #Order에 str 반환 뺴먹어서 추가
+    #Order에 str 반환 빼먹어서 추가
     def __str__(self):
         return f"Order {self.order_number} for {self.buyer}"
 

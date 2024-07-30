@@ -45,3 +45,28 @@ def list_product(request, pk):
     store = get_object_or_404(Store, pk=pk)
     products = SaleProduct.objects.filter(store=store)
     return Response({'products': list(products.values()), 'store_name':store.name}, status=200)
+
+@api_view(['GET'])
+def list_purchase(request, pk):
+    store = get_object_or_404(Store, pk=pk)
+    orders = Order.objects.filter(store=store)
+    return Response({'products': list(orders.values()), 'store_name':store.name}, status=200)
+
+@api_view(['PATCH'])
+def order_update(request, pk, order_id):
+    try:
+        store = Store.objects.get(pk=pk)
+        order = Order.objects.get(pk=order_id, store=store)
+    except Store.DoesNotExist:
+        return Response({"error": "Store not found"}, status=404)
+    except Order.DoesNotExist:
+        return Response({"error": "Order not found"}, status=404)
+
+    serializer = OrderUpdateSerializer(order, data=request.data, partial=True)
+    if serializer.is_valid():
+        if serializer.validated_data.get('buy_step') == Order.OrderStepCategory.PICKUP_PEND:
+            order.accept_at = timezone.now()
+        serializer.save()
+        return Response(serializer.data, status=200)
+    return Response(serializer.errors, status=400)
+
