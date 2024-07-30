@@ -46,11 +46,11 @@ class OrderCreateView(generics.CreateAPIView):
     
 # 주문서 리스트 조회
 class OrderLisetView(generics.ListAPIView):
-    queryset = Order.objects.all()
     serializer_class = OrderListSerializer
 
-    def get(self, request, *args, **kwargs):
-        return super().get(request, *args, **kwargs)
+    def get_queryset(self):
+        buyer_pk = self.kwargs['pk'] # url에서 구매자 pk 가져오기
+        return Order.objects.filter(buyer__id=buyer_pk)
 
 # 카테고리별 떨이 상품 목록 조회
 class SaleProductCateListView(generics.ListAPIView):
@@ -74,8 +74,6 @@ class SaleProductDetailView(generics.RetrieveAPIView):
         sale_product_pk = self.kwargs['pk']  # URL에서 떨이 상품 pk 가져오기
         return get_object_or_404(SaleProduct, pk=sale_product_pk)  # SaleProduct 모델에서 해당 pk 객체 찾기, 없으면 404 반환
 
-from django.shortcuts import get_object_or_404
-from rest_framework.exceptions import NotFound
 
 # 가게별 떨이 상품 목록 조회
 class SaleProductStoreListView(generics.ListAPIView):
