@@ -7,4 +7,3 @@ class Buyer(models.Model): # 구매자 모델정의
 
     def __str__(self):
         return self.name
-    

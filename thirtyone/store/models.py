@@ -13,34 +13,6 @@ def generate_code():
     raise ValueError("모든 알파벳 코드를 사용했습니다.")
 
 
-# 기본 StoreType 생성 함수
-#밑에 Store에서 StoreType 외래키로 받을 때 default 값을 1로 했을 떄 StoreType에 객체가 먼저 생성이 안되어서 오류가 생겨서 일케함
-# def get_default_store_type_id():
-#     store_type, created = StoreType.objects.get_or_create(part=StoreType.StoreCategory.FRUITS_VEGETABLES)
-#     return store_type.id
-
-
-#가게 업종 모델 StoreType
-# class StoreType(models.Model):
-#     class StoreCategory(models.TextChoices):
-#         FRUITS_VEGETABLES = 'FRV', '과일 및 야채'
-#         BUTCHER_SHOP = 'BUT', '정육점'
-#         BAKERY = 'BAK', '베이커리'
-#         SIDE_DISH_STORE = 'SID', '반찬 가게'
-#         SEAFOOD_STORE = 'SEA', '수산물 가게'
-#         RICE_CAKE_SHOP = 'RIC', '떡 가게'
-#         PREPARED_FOOD = 'PRE', '조리 식품'
-#         SNACKS = 'SNA', '간식류'
-
-#     part = models.CharField(
-#         max_length=3,  # 최대 3자까지 허용(FRV이런거)
-#         choices=StoreCategory.choices, # 선택지를 StoreCategory 클래스에서 가져옴
-#         default=StoreCategory.FRUITS_VEGETABLES, # 기본값을 '과일 및 야채'로 설정
-#     )
-
-#     def __str__(self):
-#         return self.get_part_display()  # 선택된 값의 레이블 반환
-
 
 # 판매자 모델 정의
 class Store(models.Model): 
@@ -67,9 +39,7 @@ class Store(models.Model):
     latitude = models.FloatField(default=0.0)  # 위도
     longitude = models.FloatField(default=0.0)  # 경도
     code = models.CharField(max_length=1, unique=True, editable=False)  # 가게 고유 알파벳 코드
-
-    # 판매자(Store) : 가게업종(StoreType) = N : 1
-    type = models.CharField(max_length=3, choices=TYPE_CHOICES)
+    type = models.CharField(max_length=3, choices=TYPE_CHOICES) #가게 업종
 
 
     #새로운 Store객체를 저장 할 때, store_code가 없으면, 다시 호출해서 설정함
@@ -83,27 +53,6 @@ class Store(models.Model):
         return self.name
 
 
-#상품 카테고리 모델 ProductType
-# class ProductType(models.Model):
-#     class ProductCategory(models.TextChoices):
-#         BAKERY = 'BAK', '빵 & 간식류'
-#         BUTCHER_SHOP = 'BUT', '정육 제품'
-#         FRUITS = 'FRU', '과일류'
-#         VEGETABLES = 'VEG', '채소류'
-#         SIDE_DISH_STORE = 'SID', '반찬 가게'
-#         SNACKS = 'ETC', '기타'
-
-#     part = models.CharField(
-#         max_length=3,  # 최대 3자까지 허용(BAK이런거)
-#         choices=ProductCategory.choices, # 선택지를 ProductCategory 클래스에서 가져옴
-#         default=ProductCategory.BAKERY, # 기본값을 '빵 & 간식류'로 설정
-#     )
-
-
-#     def __str__(self):
-#         return self.name
-
-
 #떨이상품 모델 SaleProduct 
 class SaleProduct(models.Model):
     TYPE_CHOICES = [
@@ -112,7 +61,6 @@ class SaleProduct(models.Model):
         ('FRU', '과일류'),
         ('VEG', '채소류'),
         ('SID', '반찬 가게'),
-        ('BUT', '정육점'),
         ('ETC', '기타'),
     ]
     name = models.CharField(max_length=255) # 떨이 상품명
@@ -121,11 +69,10 @@ class SaleProduct(models.Model):
     price = models.IntegerField(default=0) # 상품 정가
     sale_price = models.IntegerField(default=0) # 상품 할인가
     content = models.TextField() # 상품 설명
-
+    product_type = models.CharField(max_length=3, choices=TYPE_CHOICES) #상품카테고리 선택
     # 판매자(Store) : 떨이상품(SaleProduct) = 1 : N
-    store = models.ForeignKey(Store, on_delete=models.CASCADE)
-    #상품 카테고리(ProductType) : 떨이 상품(SaleProduct)   = 1 : N
-    product_type = models.CharField(max_length=3, choices=TYPE_CHOICES)
+    store = models.ForeignKey(Store, on_delete=models.CASCADE) # 판매자 Store의 외래키
+
 
     def __str__(self):
         return self.name  # 선택된 값의 레이블 반환
@@ -134,7 +81,7 @@ class SaleProduct(models.Model):
 
 #상품 실적 모델 SaleRecord
 class SaleRecord(models.Model):
-    date = models.DateField() #날짜 저장 (시간 저장 안되도 ㄱㅊ으려나??)
+    date = models.DateField() #날짜 저장 
     amount = models.IntegerField(default=0) # 상품별 당일 수량 저장
 
     #떨이 상품(SaleProduct) : 상품 실적(SaleRecord) = 1 : N
@@ -151,7 +98,10 @@ class Order(models.Model):
     order_number = models.CharField(max_length=10, unique=True, editable=False) 
     #판매자(Store) : 주문(Order) = 1 : N
     store = models.ForeignKey(Store, on_delete=models.CASCADE)  # 가게 외래키
+    #구매자(Buyer) : 주문(Order) = 1 : N 
     buyer = models.ForeignKey(Buyer, on_delete=models.CASCADE,default=1)  # 구매자 외래키
+    #떨이상품(SaleProduct) : 주문(Order) = 1: N 
+    sale_product = models.ForeignKey(SaleProduct,on_delete=models.CASCADE)
     amount = models.IntegerField(default=0) #주문 수량
     class OrderStepCategory(models.TextChoices): # 구매 처리 단계를 위한 클래스
         RES_PEND = 'RES', '예약확인중'
