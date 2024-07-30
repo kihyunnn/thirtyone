@@ -21,10 +21,12 @@ def get_secret(setting, secrets=secrets):
 # 시크릿키와 가져오기
 SECRET_KEY = get_secret('SECRET_KEY')
 
-# 사진들 저장을 위한 미디어 경로 설정
-MEDIA_ROOT = BASE_DIR / 'media'
-MEDIA_URL = '/media/'
+# 정적 파일 설정
+STATIC_URL = '/static/'
 
+# 사진들 저장을 위한 미디어 경로 설정
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+MEDIA_URL = '/media/'
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -131,7 +133,7 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.2/howto/static-files/
 
-STATIC_URL = 'static/'
+
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
