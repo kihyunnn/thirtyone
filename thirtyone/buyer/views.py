@@ -2,9 +2,12 @@ from django.shortcuts import get_object_or_404, render
 from rest_framework.response import Response
 from rest_framework import generics, status
 from rest_framework.exceptions import ValidationError, NotFound #예외처리를 위해 추가
+from django.db.models import Q #검색기능에 Q객체 기능 사용
+
 from .models import Buyer
 from .serializers import * # Buyer앱의 시리얼라이저 가져오기
 from store.models import SaleProduct, Order, Store # Sotre 앱에서 모델 가져옴. SaleProduct
+
 
 # Create your views here.
 
@@ -91,3 +94,37 @@ class SaleProductStoreListView(generics.ListAPIView):
             raise NotFound(detail="해당 가게에 대한 떨이 상품이 존재하지 않습니다.")
         
         return queryset
+# 검색 기능
+class SearchView(generics.ListAPIView):
+    def get_queryset(self):
+        query = self.request.GET.get('q')  # 검색에서 파라미터 가져오기
+        if query:
+            results = []
+            if Store.objects.filter(name__icontains=query).exists(): #가게이름과 부분일치 하는 것이 있으면
+                stores = Store.objects.filter(name__icontains=query) #기본적으로 가게 리스트를 반환함
+                results = list(stores) 
+            elif Store.objects.filter(type__icontains=query).exists(): #가게에 일치하는게 없는데, 가게 타입과 일치해도 가게 리스트 반환
+                stores = Store.objects.filter(type__icontains=query)
+                results = list(stores)
+            elif SaleProduct.objects.filter(name__icontains=query).exists(): #마지막으로 떨이 상품 이름과 비교
+                saleproducts = SaleProduct.objects.filter(name__icontains=query)
+                results = list(saleproducts)
+            return results
+        else:
+            return []
+
+    def get_serializer_class(self):
+        query = self.request.GET.get('q')  # 검색에서 파라미터 가져오기
+        if query:
+            if Store.objects.filter(Q(name__icontains=query) | Q(type__icontains=query)).exists():  # Store 모델에서 검색어와 일치하는 항목이 있는지 확인
+                return StoreListSerializer  # Store 모델의 시리얼라이저 반환
+            elif SaleProduct.objects.filter(Q(name__icontains=query)).exists():  # SaleProduct 모델에서 검색어와 일치하는 항목이 있는지 확인
+                return SaleProductListSerializer  # SaleProduct 모델의 시리얼라이저 반환
+        return StoreListSerializer  # 기본적으로 StoreSerializer 반환
+
+    def list(self, request, *args, **kwargs): # 검색 결과 없음 반환
+        queryset = self.get_queryset()  
+        if not queryset:
+            return Response({"detail": "검색결과 없음"}, status=status.HTTP_404_NOT_FOUND)
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data)
