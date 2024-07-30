@@ -23,6 +23,6 @@ admin.site.register(SaleProduct, SaleProductAdmin)
 
 
 class SaleRecordAdmin(admin.ModelAdmin):
-    list_display = ('sale_product', 'date', 'amount')
+    list_display = ('sale_product', 'date', 'amount', 'selled_amount')
 
 admin.site.register(SaleRecord, SaleRecordAdmin)

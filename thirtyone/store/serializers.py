@@ -17,7 +17,6 @@ class CreateSaleProductSerializer(serializers.ModelSerializer):
         model = SaleProduct
         fields = ['photo', 'name', 'product_type', 'price', 'sale_price', 'amount', 'content']
 
-    
 
     def save(self, **kwargs): # save 함수 오버라이딩
         # 새 인스턴스가 생성되거나 기존 인스턴스가 업데이트될 때 호출됨
