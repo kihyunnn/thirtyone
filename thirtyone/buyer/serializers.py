@@ -25,7 +25,7 @@ class BuySerializer(serializers.ModelSerializer):
 class OrderCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Order
-        fields = ['amount','store', 'sale_product',]
+        fields = ['buyer','amount','sale_product','store']
 
 # 주문서 반환 시리얼라이저
 class OrderDeailSerializer(serializers.ModelSerializer):

@@ -19,12 +19,13 @@ class OrderCreateView(generics.CreateAPIView):
     serializer_class = OrderCreateSerializer #주문서 생성 시리얼라이저 사용
     
     def post(self, request, *args, **kwargs):
-        sale_product_pk = self.kwargs['pk']  # URL에서 떨이 상품 pk 가져오기
-        sale_product = get_object_or_404(SaleProduct, pk=sale_product_pk)  # SaleProduct 모델에서 해당 pk 객체 찾기, 없으면 404 반환
-        data = request.data.copy()  # 요청 본문을 복사함
-        data['sale_product'] = sale_product.pk
-        data['store'] = sale_product.store.pk  # store 필드를 자동으로 추가
-        
+        data = request.data.copy() # 요청 본분 data 변수에 복사
+        # json 본문에서 SaleProduct id와 Buyer id 가져오기
+        sale_product_pk = data.get('sale_product')
+        buyer_id = data.get('buyer')
+        # SaleProduct 모델에서 해당 pk 객체 찾기, 없으면 404 반환
+        sale_product = get_object_or_404(SaleProduct, pk=sale_product_pk)
+
         # 주문 수량을 정수로 변환
         order_amount = int(data['amount'])
 
@@ -34,9 +35,7 @@ class OrderCreateView(generics.CreateAPIView):
                 status=status.HTTP_400_BAD_REQUEST
             )
         
-        # 재고 감소 ->아 요거는 픽업 대기중으로 변경 될 떄 감소해야하는구나
-        # sale_product.amount -= order_amount  # 주문 수량만큼 떨이 상품 수량 감소
-        sale_product.save()  # 변경사항 저장
+        data['store'] = sale_product.store.pk  # store 필드를 자동으로 추가
 
         serializer = self.get_serializer(data=data)
         serializer.is_valid(raise_exception=True)
