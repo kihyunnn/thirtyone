@@ -8,4 +8,6 @@ urlpatterns = [
     # 우리가 파리바게트 판매자를 기준으로 홈화면 띄우기로 했어서 이렇게 함
     path('create/<int:pk>/product', views.create_product, name="create_product"),
     path('<int:pk>/product/list', views.list_product, name="list_product"),
+    path('<int:pk>/purchase/list', views.list_purchase, name='list_purchase'),
+    path('<int:pk>/order/<int:order_id>/update-status', views.order_update, name="order_update"),
 ]

@@ -99,9 +99,9 @@ class Order(models.Model):
     #판매자(Store) : 주문(Order) = 1 : N
     store = models.ForeignKey(Store, on_delete=models.CASCADE)  # 가게 외래키
     #구매자(Buyer) : 주문(Order) = 1 : N 
-    buyer = models.ForeignKey(Buyer, on_delete=models.CASCADE,default=1)  # 구매자 외래키
+    buyer = models.ForeignKey(Buyer, on_delete=models.CASCADE, default=1)  # 구매자 외래키
     #떨이상품(SaleProduct) : 주문(Order) = 1: N 
-    sale_product = models.ForeignKey(SaleProduct,on_delete=models.CASCADE)
+    sale_product = models.ForeignKey(SaleProduct,on_delete=models.CASCADE, default=1)
     amount = models.IntegerField(default=0) #주문 수량
     class OrderStepCategory(models.TextChoices): # 구매 처리 단계를 위한 클래스
         RES_PEND = 'RES', '예약확인중'

@@ -4,6 +4,7 @@ from .serializers import *
 from .models import *
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
+from .tasks import check_order_status
 
 @api_view(['POST'])
 def create_store(request):
@@ -62,10 +63,15 @@ def order_update(request, pk, order_id):
     except Order.DoesNotExist:
         return Response({"error": "Order not found"}, status=404)
 
+    sale_product_pk = order.sale_product
+    sale_product = SaleProduct.objects.get(pk=sale_product_pk)
     serializer = OrderUpdateSerializer(order, data=request.data, partial=True)
     if serializer.is_valid():
         if serializer.validated_data.get('buy_step') == Order.OrderStepCategory.PICKUP_PEND:
             order.accept_at = timezone.now()
+            sale_product.amount -= order.amount # 주문수락하면 떨이 수량 감소시키기
+            check_order_status.apply_async(countdown=1800)  # 30분 후 실행
+
         serializer.save()
         return Response(serializer.data, status=200)
     return Response(serializer.errors, status=400)

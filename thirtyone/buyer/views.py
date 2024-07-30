@@ -45,6 +45,7 @@ class OrderCreateView(generics.CreateAPIView):
         self.perform_create(serializer)
         
         headers = self.get_success_headers(serializer.data)
+        
         return Response(serializer.data, status=201, headers=headers)
     
 # 주문서 리스트 조회
