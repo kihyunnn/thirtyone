@@ -14,3 +14,5 @@ STATICFILES_DIRS = [
     os.path.join(BASE_DIR, 'static'),
 ]
 
+# 개발 환경에서 허용할 호스트 설정
+ALLOWED_HOSTS = ['localhost', '127.0.0.1']
