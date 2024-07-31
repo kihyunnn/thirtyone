@@ -39,7 +39,6 @@ INSTALLED_APPS = [
     #myapps
     'store',
     'buyer',
-    'map',
     'dashboard',
     'user',
     #basic apps
