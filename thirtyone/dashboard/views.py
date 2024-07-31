@@ -8,8 +8,9 @@ from rest_framework.views import APIView
 # Create your views here.
 from store.serializers import *
 from store.models import SaleProduct, SaleRecord
+from .serializers import *
 
-
+# 대시보드 요약 4개정보 반환 
 class SalesSummaryView(APIView):
     def get(self, request, *args, **kwargs):
         store_pk_par = self.kwargs['pk']  # URL에서 store pk 가져오기
@@ -56,3 +57,24 @@ class SalesSummaryView(APIView):
         }
         # 정리된 데이터를 HTTP 200 OK 상태와 함께 반환
         return Response(data, status=status.HTTP_200_OK)
+    
+# 지난주 떨이 상품 판매 순위 조회
+class SelledRankListView(generics.ListAPIView):
+    queryset = SaleRecord.objects.all()
+    serializer_class = SelledRankSerializer
+    
+    def get_queryset(self):
+        
+         # 현재 날짜 가져오기
+        today = datetime.datetime.now().date()
+        # 이번 주 월요일 계산
+        this_week_monday = today - datetime.timedelta(days=today.weekday())
+        # 지난주 월요일 계산
+        last_week_monday = this_week_monday - datetime.timedelta(days=7)
+        # 지난주 일요일 계산
+        last_week_sunday = last_week_monday + datetime.timedelta(days=6)
+        
+        store_pk = self.kwargs['pk'] # url에서 구매자 pk 가져오기
+        return SaleRecord.objects.filter(date__range=(last_week_monday, last_week_sunday),sale_product__store__id=store_pk, selled_amount__gt=0).order_by('-selled_amount')[:5]
+        # 조건 : 저번주 월욜~ 일욜 / url에 pk와 같은 떨이상품 pk를 가지고있는 SaleRecord / seeld_amount가 양수일것 / 오름차순 정렬 / 5개까지만 반환
+
