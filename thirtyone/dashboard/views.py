@@ -63,9 +63,9 @@ class SelledRankListView(generics.ListAPIView):
     queryset = SaleRecord.objects.all()
     serializer_class = SelledRankSerializer
     
-    def get_queryset(self):
+    def get_queryset(self, request, pk, *args, **kwargs):
         
-         # 현재 날짜 가져오기
+        # 현재 날짜 가져오기
         today = datetime.datetime.now().date()
         # 이번 주 월요일 계산
         this_week_monday = today - datetime.timedelta(days=today.weekday())
@@ -78,3 +78,32 @@ class SelledRankListView(generics.ListAPIView):
         return SaleRecord.objects.filter(date__range=(last_week_monday, last_week_sunday),sale_product__store__id=store_pk, selled_amount__gt=0).order_by('-selled_amount')[:5]
         # 조건 : 저번주 월욜~ 일욜 / url에 pk와 같은 떨이상품 pk를 가지고있는 SaleRecord / seeld_amount가 양수일것 / 오름차순 정렬 / 5개까지만 반환
 
+# 판매 추이 조회
+class SaleTrendListView(generics.ListAPIView):
+    serializer_class = SaleTrendSerializer
+
+    def get_queryset(self):
+        store_pk = self.kwargs['storepk']  # URL에서 store_pk 가져오기
+        product_pk = self.kwargs['productpk']  # URL에서 sale_product_pk 가져오기
+
+        # 현재 날짜 가져오기
+        today = datetime.datetime.now().date()
+        # 7일 전 날짜
+        last_week_day = today - datetime.timedelta(days=7)
+        # 어제 날짜
+        yesterday = today - datetime.timedelta(days=1)
+
+        return SaleRecord.objects.filter(
+            date__range=(last_week_day, yesterday),
+            sale_product__store__id=store_pk,
+            sale_product__pk=product_pk,
+        ).order_by('date')
+
+    def list(self, request, *args, **kwargs):
+        queryset = self.get_queryset()  # 필터링된 쿼리셋 가져오기
+
+        # 시리얼라이저 인스턴스 생성
+        serializer = self.get_serializer(queryset, many=True)
+        data = serializer.data  # 시리얼라이즈된 데이터 가져오기
+        print(data)  # 쿼리셋 확인
+        return Response(data, status=status.HTTP_200_OK)
