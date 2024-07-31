@@ -2,6 +2,7 @@ from django.db import models
 import string #가게 번호 코드 부여하려고 추가함
 from buyer.models import Buyer #주문서에 구매자 pk넣기위해서
 from django.utils import timezone #주문 수락 시간추가위해서
+from datetime import timedelta # 자동 주문 취소 시간 저장 위해서
 # Create your models here.
 
 #판매자 코드 생성 함수
@@ -83,6 +84,7 @@ class SaleProduct(models.Model):
 class SaleRecord(models.Model):
     date = models.DateField() #날짜 저장 
     amount = models.IntegerField(default=0) # 상품별 당일 수량 저장
+    selled_amount = models.IntegerField(default=0) # 상품별 당일 판매량 저장
 
     #떨이 상품(SaleProduct) : 상품 실적(SaleRecord) = 1 : N
     sale_product = models.ForeignKey(SaleProduct, on_delete=models.CASCADE)
@@ -94,14 +96,14 @@ class SaleRecord(models.Model):
 #주문 모델 Order
 class Order(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)  # 주문서 생성 시간 작성
-    # 주문서 번호, A1,A2이런거 근데 가게마다 A를 고유로 부여하고, 가게 기준 주문서가 A1,A2쌓이도록 함
+    # 주문서 번호, A1, A2이런거 근데 가게마다 A를 고유로 부여하고, 가게 기준 주문서가 A1,A2쌓이도록 함
     order_number = models.CharField(max_length=10, unique=True, editable=False) 
     #판매자(Store) : 주문(Order) = 1 : N
     store = models.ForeignKey(Store, on_delete=models.CASCADE)  # 가게 외래키
     #구매자(Buyer) : 주문(Order) = 1 : N 
-    buyer = models.ForeignKey(Buyer, on_delete=models.CASCADE,default=1)  # 구매자 외래키
+    buyer = models.ForeignKey(Buyer, on_delete=models.CASCADE, default=1)  # 구매자 외래키
     #떨이상품(SaleProduct) : 주문(Order) = 1: N 
-    sale_product = models.ForeignKey(SaleProduct,on_delete=models.CASCADE)
+    sale_product = models.ForeignKey(SaleProduct,on_delete=models.CASCADE, default=1)
     amount = models.IntegerField(default=0) #주문 수량
     class OrderStepCategory(models.TextChoices): # 구매 처리 단계를 위한 클래스
         RES_PEND = 'RES', '예약확인중'
@@ -112,9 +114,10 @@ class Order(models.Model):
     buy_step = models.CharField(
         max_length=3,  # 최대 3자까지 허용
         choices=OrderStepCategory.choices, # 선택지를  OrderStepCategory 클래스에서 가져옴
-        default=OrderStepCategory.PICKUP_PEND, # 기본값을 '픽업대기중'으로 설정
+        default=OrderStepCategory.RES_PEND, # 기본값을 '예약확인중'으로 설정
     )
-    accept_at = models.DateTimeField(null=True, blank=True) #픽업대기중으로 수정된 시간
+    accept_at = models.DateTimeField(null=True, blank=True) # 픽업대기중으로 수정된 시간
+    reject_at = models.DateTimeField(null=True, blank=True) # 주문취소가 되는 시간(accept_at 기준 30분 후)
     
 
     #주문서 번호 생성 로직
@@ -138,10 +141,13 @@ class Order(models.Model):
             if old_order.buy_step != self.buy_step and self.buy_step == self.OrderStepCategory.RES_PEND:
                 self.accept_at = timezone.now()  # accept_at 필드에 현재 시간을 기록
 
+        if self.accept_at: # accept_at 시간이 업데이트 될 경우
+            self.reject_at = self.accept_at + timedelta(minutes=30)
+            # 자동주문 취소시간 업데이트
 
         super().save(*args, **kwargs) #객체 저장
     
-    #Order에 str 반환 뺴먹어서 추가
+    #Order에 str 반환 빼먹어서 추가
     def __str__(self):
         return f"Order {self.order_number} for {self.buyer}"
 
