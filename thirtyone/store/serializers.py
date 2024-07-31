@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from .models import *
+from buyer.models import *
 import datetime
 
 class CreateStoreSerializer(serializers.ModelSerializer):
@@ -13,6 +14,7 @@ class StoreSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 class CreateSaleProductSerializer(serializers.ModelSerializer):
+
     class Meta:
         model = SaleProduct
         fields = ['photo', 'name', 'product_type', 'price', 'sale_price', 'amount', 'content']
@@ -36,6 +38,13 @@ class CreateSaleProductSerializer(serializers.ModelSerializer):
         else: # 원래 있던 경우는 누적합으로
             sale_record.amount += sale_product.amount
         sale_record.save()
+
+class OrderSerializer(serializers.ModelSerializer):
+    sale_product_name = serializers.CharField(source='sale_product.name', read_only=True)
+    buyer_name = serializers.CharField(source='buyer.name', read_only=True)
+    class Meta:
+        model = Order
+        fields = '__all__'
 
 class OrderUpdateSerializer(serializers.ModelSerializer):
     class Meta:
