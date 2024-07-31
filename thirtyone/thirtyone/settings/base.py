@@ -54,7 +54,7 @@ INSTALLED_APPS = [
     'rest_framework_simplejwt',
     'corsheaders',
     'drf_yasg',
-    'django_celery_beat', # 30분후 자동 주문 취소때 쓰임
+    #'django_celery_beat', # 30분후 자동 주문 취소때 쓰임
 ]
 
 MIDDLEWARE = [
@@ -127,13 +127,13 @@ WSGI_APPLICATION = 'thirtyone.wsgi.application'
 #     }
 # }
 
-# Celery Beat 설정 추가
-CELERY_BEAT_SCHEDULE = {
-    'check_order_status': {
-        'task': 'store.tasks.check_order_status',
-        'schedule': 30.0,  # 30초마다 작업 실행
-    },
-}
+# Celery Beat 설정 추가(사용 안해서 주석처리함)
+# CELERY_BEAT_SCHEDULE = {
+#     'check_order_status': {
+#         'task': 'store.tasks.check_order_status',
+#         'schedule': 30.0,  # 30초마다 작업 실행
+#     },
+# }
 
 # Password validation
 # https://docs.djangoproject.com/en/4.2/ref/settings/#auth-password-validators
