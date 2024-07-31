@@ -57,7 +57,8 @@ def list_product(request, pk):
 def list_purchase(request, pk):
     store = get_object_or_404(Store, pk=pk)
     orders = Order.objects.filter(store=store)
-    return Response({'products': list(orders.values()), 'store_name':store.name}, status=200)
+    serializer = OrderSerializer(orders, many=True)
+    return Response({'products': serializer.data, 'store_name':store.name}, status=200)
 
 
 # 주문 수락 및 거절 등
