@@ -27,7 +27,6 @@ class Store(models.Model):
         ('BAK', '베이커리'),
         ('SID', '반찬 가게'),
         ('SEA', '수산물 가게'),
-        ('BUT', '정육점'),
         ('RIC', '떡 가게'),
         ('SNA', '간식류'),
     ]
@@ -61,7 +60,7 @@ class SaleProduct(models.Model):
         ('BUT', '정육 제품'),
         ('FRU', '과일류'),
         ('VEG', '채소류'),
-        ('SID', '반찬 가게'),
+        ('SID', '반찬류'),
         ('ETC', '기타'),
     ]
     name = models.CharField(max_length=255) # 떨이 상품명
