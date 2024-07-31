@@ -135,15 +135,15 @@ class Order(models.Model):
             # 가게의 고유 코드(store_code)와 새로운 순차 번호를 결합하여 주문서 번호 생성
             self.order_number = f"{self.store.code}{new_order_number}"
 
-        if self.pk:  # 객체가 이미 존재하는 경우
-            old_order = Order.objects.get(pk=self.pk)  # 기존 객체를 데이터베이스에서 가져옴
-            # 기존 객체의 buy_step와 현재 객체의 buy_step가 다르고, 현재 buy_step가 RES_PEND인 경우
-            if old_order.buy_step != self.buy_step and self.buy_step == self.OrderStepCategory.RES_PEND:
-                self.accept_at = timezone.now()  # accept_at 필드에 현재 시간을 기록
+        # if self.pk:  # 객체가 이미 존재하는 경우 -> views.py 에서 직접 수행하기
+        #     old_order = Order.objects.get(pk=self.pk)  # 기존 객체를 데이터베이스에서 가져옴
+        #     # 기존 객체의 buy_step와 현재 객체의 buy_step가 다르고, 현재 buy_step가 RES_PEND인 경우
+        #     if old_order.buy_step != self.buy_step and self.buy_step == self.OrderStepCategory.RES_PEND:
+        #         self.accept_at = timezone.now()  # accept_at 필드에 현재 시간을 기록
 
-        if self.accept_at: # accept_at 시간이 업데이트 될 경우
-            self.reject_at = self.accept_at + timedelta(minutes=30)
-            # 자동주문 취소시간 업데이트
+        # if self.accept_at: # accept_at 시간이 업데이트 될 경우
+        #     self.reject_at = self.accept_at + timedelta(minutes=30)
+        #     # 자동주문 취소시간 업데이트
 
         super().save(*args, **kwargs) #객체 저장
     
