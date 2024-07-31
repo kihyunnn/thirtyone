@@ -3,7 +3,10 @@ from django.urls import path,include
 from django.urls import re_path
 from rest_framework.permissions import AllowAny
 from drf_yasg.views import get_schema_view
-from drf_yasg       import openapi
+from drf_yasg import openapi
+# 정적 파일 설정
+from django.conf import settings
+from django.conf.urls.static import static
 
 schema_view = get_schema_view(
     openapi.Info(
@@ -17,10 +20,6 @@ schema_view = get_schema_view(
     public=True,
     permission_classes=(AllowAny,),
 )
-
-# 정적 파일 설정
-from django.conf import settings
-from django.conf.urls.static import static
 
 urlpatterns = [
     path('admin/', admin.site.urls),

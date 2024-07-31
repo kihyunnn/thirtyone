@@ -3,7 +3,7 @@ from .models import Buyer
 from store.models import * #store의 모델 가져옴
 
 # Store 시리얼라이저
-class StoreSerializer(serializers.ModelSerializer):
+class StoreDupSerializer(serializers.ModelSerializer):
     class Meta:
         model = Store
         fields = ['name']
@@ -35,7 +35,7 @@ class OrderDeailSerializer(serializers.ModelSerializer):
 
 # 주문서 리스트 조회 시리얼라이저
 class OrderListSerializer(serializers.ModelSerializer):
-    store = StoreSerializer() #store 이름 나오도록 시리얼라이저 중첩
+    store = StoreDupSerializer() #store 이름 나오도록 시리얼라이저 중첩
     sale_product = SaleProductNameSerializer() #떨이상품 이름 나오도록 시리얼라이저 중첩
 
     class Meta:
@@ -44,7 +44,7 @@ class OrderListSerializer(serializers.ModelSerializer):
 
 # 카테고리별 떨이 상품 목록 조회 시리얼 라이저 / 검색에도 사용
 class SaleProductListSerializer(serializers.ModelSerializer):
-    store = StoreSerializer() #store 이름 나오도록 시리얼라이저 중첩
+    store = StoreDupSerializer() #store 이름 나오도록 시리얼라이저 중첩
     
     class Meta:
         model = SaleProduct
@@ -52,7 +52,7 @@ class SaleProductListSerializer(serializers.ModelSerializer):
 
 # 떨이 상품 상세 조회 시리얼 라이저
 class SaleProductDetailSerializer(serializers.ModelSerializer):
-    store = StoreSerializer() #store 이름 나오도록 시리얼라이저 중첩
+    store = StoreDupSerializer() #store 이름 나오도록 시리얼라이저 중첩
 
     class Meta:
         model = SaleProduct
