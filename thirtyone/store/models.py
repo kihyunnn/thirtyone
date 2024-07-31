@@ -85,7 +85,6 @@ class SaleRecord(models.Model):
     date = models.DateField() #날짜 저장 
     amount = models.IntegerField(default=0) # 상품별 당일 수량 저장
     selled_amount = models.IntegerField(default=0) # 상품별 당일 판매량 저장
-
     #떨이 상품(SaleProduct) : 상품 실적(SaleRecord) = 1 : N
     sale_product = models.ForeignKey(SaleProduct, on_delete=models.CASCADE)
 
