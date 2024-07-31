@@ -16,7 +16,8 @@ def check_order_status():
     # Order.accept_at 시간이 time_limit 보다 작은 객체 필터링
     for order in orders: # 해당 객체의 buy_step을 자동취소로 바꿈
         order.buy_step = Order.OrderStepCategory.AUTO_CANCEL
-        sale_product_pk = order.sale_product
-        sale_product = SaleProduct.objects.get(pk=sale_product_pk)
-        sale_product += order.amount # 자동취소되면 해당 수량 다시 떨이상품에 업데이트 시킴
+        store_name = order.store
+        sale_product_name = order.sale_product
+        sale_product = SaleProduct.objects.get(store=store_name, name=sale_product_name)
+        sale_product.amount += order.amount # 자동취소되면 해당 수량 다시 떨이상품에 업데이트 시킴
         order.save()
