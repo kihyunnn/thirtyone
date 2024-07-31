@@ -2,6 +2,7 @@ from django.db import models
 import string #가게 번호 코드 부여하려고 추가함
 from buyer.models import Buyer #주문서에 구매자 pk넣기위해서
 from django.utils import timezone #주문 수락 시간추가위해서
+from datetime import timedelta # 자동 주문 취소 시간 저장 위해서
 # Create your models here.
 
 #판매자 코드 생성 함수
@@ -115,7 +116,8 @@ class Order(models.Model):
         choices=OrderStepCategory.choices, # 선택지를  OrderStepCategory 클래스에서 가져옴
         default=OrderStepCategory.RES_PEND, # 기본값을 '예약확인중'으로 설정
     )
-    accept_at = models.DateTimeField(null=True, blank=True) #픽업대기중으로 수정된 시간
+    accept_at = models.DateTimeField(null=True, blank=True) # 픽업대기중으로 수정된 시간
+    reject_at = models.DateTimeField(null=True, blank=True) # 주문취소가 되는 시간(accept_at 기준 30분 후)
     
 
     #주문서 번호 생성 로직
@@ -139,6 +141,9 @@ class Order(models.Model):
             if old_order.buy_step != self.buy_step and self.buy_step == self.OrderStepCategory.RES_PEND:
                 self.accept_at = timezone.now()  # accept_at 필드에 현재 시간을 기록
 
+        if self.accept_at: # accept_at 시간이 업데이트 될 경우
+            self.reject_at = self.accept_at + timedelta(minutes=30)
+            # 자동주문 취소시간 업데이트
 
         super().save(*args, **kwargs) #객체 저장
     
