@@ -91,7 +91,7 @@ CORS_ALLOW_HEADERS = [  # 허용할 헤더
 
 CORS_ALLOW_CREDENTIALS = True # 쿠키 등의 요청을 허용할지 여부
 
-CORS_ALLOW_ALL_ORIGINS: True #  모든 출저 허용
+CORS_ALLOW_ALL_ORIGINS = True #  모든 출저 허용
 
 
 ROOT_URLCONF = 'thirtyone.urls'
