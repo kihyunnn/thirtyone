@@ -107,6 +107,7 @@ class Order(models.Model):
         RES_PEND = 'RES', '예약확인중'
         PICKUP_PEND = 'PIC', '픽업대기중'
         AUTO_CANCEL = 'AUT', '자동취소'
+        BUYER_CANCEL = 'CAN', '주문자취소'
         PICUP_COMP = 'COM', '픽업완료'
         ORDER_REJ = 'REJ', '주문거절'
     buy_step = models.CharField(

@@ -62,3 +62,8 @@ class StoreListSerializer(serializers.ModelSerializer):
     class Meta:
         model = Store
         fields = '__all__'
+
+class OrderCancelSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Order
+        fields = ['buy_step']

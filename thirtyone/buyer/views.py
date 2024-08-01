@@ -7,7 +7,7 @@ from django.db.models import Q #검색기능에 Q객체 기능 사용
 from .models import Buyer
 from .serializers import * # Buyer앱의 시리얼라이저 가져오기
 from store.models import SaleProduct, Order, Store # Sotre 앱에서 모델 가져옴. SaleProduct
-
+from rest_framework.decorators import api_view
 
 # Create your views here.
 
@@ -55,6 +55,32 @@ class OrderLisetView(generics.ListAPIView):
     def get_queryset(self):
         buyer_pk = self.kwargs['pk'] # url에서 구매자 pk 가져오기
         return Order.objects.filter(buyer__id=buyer_pk)
+
+# 주문 취소
+@api_view(['PATCH'])
+def cancel_order(request, pk, order_id):
+    try:
+        buyer = Buyer.objects.get(pk=pk)
+        order = Order.objects.get(pk=order_id, buyer=buyer)
+    except Store.DoesNotExist:
+        return Response({"error": "Byer not found"}, status=404)
+    except Order.DoesNotExist:
+        return Response({"error": "Order not found"}, status=404)
+
+    serializer = OrderCancelSerializer(order, data=request.data, partial=True)
+    if serializer.is_valid():
+        sale_product_name = order.sale_product
+        store_name = order.store
+        sale_product = SaleProduct.objects.get(store=store_name, name=sale_product_name)
+        if serializer.validated_data.get('buy_step') == Order.OrderStepCategory.BUYER_CANCEL: # 주문 취소
+            sale_product.amount += order.amount # 자동취소되면 해당 수량 다시 떨이상품에 업데이트 시킴
+            sale_product.save()
+        
+        serializer.save()
+        return Response(serializer.data, status=200)
+    return Response(serializer.errors, status=400)
+        
+
 
 # 카테고리별 떨이 상품 목록 조회
 class SaleProductCateListView(generics.ListAPIView):
