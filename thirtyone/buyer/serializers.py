@@ -12,7 +12,7 @@ class StoreDupSerializer(serializers.ModelSerializer):
 class SaleProductNameSerializer(serializers.ModelSerializer):
     class Meta:
         model = SaleProduct
-        fields = ['name']
+        fields = ['name', 'photo']
 
 
 # 구매자 시작 시리얼 라이저
