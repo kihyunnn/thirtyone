@@ -9,9 +9,34 @@ from rest_framework.views import APIView
 from store.serializers import *
 from store.models import SaleProduct, SaleRecord
 from .serializers import *
-
+#스웨거를 위한 import
+from rest_framework.decorators import api_view
+from drf_yasg.utils import swagger_auto_schema
+from drf_yasg import openapi
 # 대시보드 요약 4개정보 반환 
 class SalesSummaryView(APIView):
+    @swagger_auto_schema(
+        operation_description="특정 가게의 대시보드 요약 정보를 반환합니다.",
+        operation_summary="대시보드 요약 정보 조회",
+        responses={
+            200: openapi.Response('성공적으로 조회되었습니다.', openapi.Schema(
+                type=openapi.TYPE_OBJECT,
+                properties={
+                    'today_sales_count': openapi.Schema(type=openapi.TYPE_INTEGER, description='오늘 판매한 떨이 개수'),
+                    'today_sales_income': openapi.Schema(type=openapi.TYPE_INTEGER, description='오늘 판매 수익'),
+                    'month_sales_count': openapi.Schema(type=openapi.TYPE_INTEGER, description='지난달 판매한 떨이 개수'),
+                    'month_sales_income': openapi.Schema(type=openapi.TYPE_INTEGER, description='지난달 판매 수익'),
+                }
+            )),
+            400: "잘못된 요청입니다.",
+            404: "가게를 찾을 수 없습니다.",
+            500: "서버 오류입니다."
+        },
+        tags=["대시보드"],
+        manual_parameters=[
+            openapi.Parameter('pk', openapi.IN_PATH, description="가게의 ID", type=openapi.TYPE_INTEGER)
+        ]
+    )
     def get(self, request, *args, **kwargs):
         store_pk_par = self.kwargs['pk']  # URL에서 store pk 가져오기
 
@@ -62,8 +87,26 @@ class SalesSummaryView(APIView):
 class SelledRankListView(generics.ListAPIView):
     queryset = SaleRecord.objects.all()
     serializer_class = SelledRankSerializer
-    
-    def get_queryset(self, request, pk, *args, **kwargs):
+    @swagger_auto_schema(
+        operation_description="지난주 떨이 상품 판매 순위를 조회합니다.",
+        operation_summary="지난주 떨이 상품 판매 순위 조회",
+        responses={
+            200: openapi.Response('성공적으로 조회되었습니다.', SelledRankSerializer(many=True)),
+            400: "잘못된 요청입니다.",
+            404: "가게를 찾을 수 없습니다.",
+            500: "서버 오류입니다."
+        },
+        tags=["대시보드"],
+        manual_parameters=[
+            openapi.Parameter('pk', openapi.IN_PATH, description="가게의 ID", type=openapi.TYPE_INTEGER)
+        ]
+    )
+    def get(self, request, *args, **kwargs):
+        return super().get(request, *args, **kwargs)
+
+    def get_queryset(self):
+        if getattr(self, 'swagger_fake_view', False):  # Swagger 스키마 생성 중일 때 빈 쿼리셋 반환
+            return SaleRecord.objects.none()
         
         # 현재 날짜 가져오기
         today = datetime.datetime.now().date()
@@ -81,8 +124,30 @@ class SelledRankListView(generics.ListAPIView):
 # 판매 추이 조회
 class SaleTrendListView(generics.ListAPIView):
     serializer_class = SaleTrendSerializer
+    queryset = SaleRecord.objects.none()  # 기본 빈 쿼리셋 설정
+    
+    @swagger_auto_schema(
+        operation_description="특정 가게와 제품의 판매 추이를 조회합니다.",
+        operation_summary="판매 추이 조회",
+        responses={
+            200: openapi.Response('성공적으로 조회되었습니다.', SaleTrendSerializer(many=True)),
+            400: "잘못된 요청입니다.",
+            404: "가게 또는 제품을 찾을 수 없습니다.",
+            500: "서버 오류입니다."
+        },
+        tags=["대시보드"],
+        manual_parameters=[
+            openapi.Parameter('storepk', openapi.IN_PATH, description="가게의 ID", type=openapi.TYPE_INTEGER),
+            openapi.Parameter('productpk', openapi.IN_PATH, description="제품의 ID", type=openapi.TYPE_INTEGER)
+        ]
+    )
+    def get(self, request, *args, **kwargs):
+        return super().get(request, *args, **kwargs)
 
     def get_queryset(self):
+        if getattr(self, 'swagger_fake_view', False):  # Swagger 스키마 생성 중일 때 빈 쿼리셋 반환
+            return SaleRecord.objects.none()
+        
         store_pk = self.kwargs['storepk']  # URL에서 store_pk 가져오기
         product_pk = self.kwargs['productpk']  # URL에서 sale_product_pk 가져오기
 
