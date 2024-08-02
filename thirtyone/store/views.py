@@ -45,6 +45,26 @@ def view_store(request):
     serializer = StoreSerializer(store)
     return Response(serializer.data, status=200)
 
+
+# 등록된 가게 목록(+ 해당 가게의 떨이 상품까지)
+@swagger_auto_schema(
+    method="get",
+    tags=["가게"],
+    operation_summary="가게 목록",
+    operation_description="가게 목록을 처리합니다.",
+    responses={
+        200: StoreMapListSerializer,
+        404: 'Store list not found'
+    }
+)
+@api_view(['GET'])
+def list_store(request): 
+    stores = Store.objects.all()
+    serializer = StoreMapListSerializer(stores, many=True, context={'request': request})
+    return Response(serializer.data, status=200)
+
+
+
 # 떨이 상품 등록
 @swagger_auto_schema(
     method="post",
