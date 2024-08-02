@@ -28,9 +28,19 @@ class BuyerCreateView(generics.CreateAPIView):
         },
         tags=["구매자"]
     )
-    def post(self, request, *args, **kwargs):
-        return super().post(request, *args, **kwargs)
-    
+    def post(self, request, *args, **kwargs):  # post 메소드 오버라이딩
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        name = serializer.validated_data['name']
+        
+        # 구매자를 찾거나 생성
+        buyer, created = Buyer.objects.get_or_create(name=name)
+        if created:
+            # 새로 생성된 경우, 시리얼라이저로 데이터를 다시 불러와서 반환
+            return Response(self.get_serializer(buyer).data, status=status.HTTP_201_CREATED)
+        else:
+            # 이미 존재하는 경우
+            return Response(self.get_serializer(buyer).data, status=status.HTTP_200_OK)
     
 # 주문서 생성 
 class OrderCreateView(generics.CreateAPIView):
@@ -133,7 +143,10 @@ def cancel_order(request, pk, order_id):
     except Order.DoesNotExist:
         return Response({"error": "Order not found"}, status=404)
 
-    serializer = OrderCancelSerializer(order, data=request.data, partial=True)
+    data_par = {
+        'buy_step':'CAN'
+    }
+    serializer = OrderCancelSerializer(order, data=data_par, partial=True)
     if serializer.is_valid():
         sale_product_name = order.sale_product
         store_name = order.store
@@ -198,10 +211,12 @@ class SaleProductDetailView(generics.RetrieveAPIView):
     def get(self, request, *args, **kwargs):
         # Swagger 스키마 생성 중일 때는 빈 쿼리셋 반환
         if getattr(self, 'swagger_fake_view', False):
-            return SaleProduct.objects.none()
+            return response()
 
         sale_product_pk = self.kwargs['pk']  # URL에서 떨이 상품 pk 가져오기
-        return get_object_or_404(SaleProduct, pk=sale_product_pk)  # SaleProduct 모델에서 해당 pk 객체 찾기, 없으면 404 반환
+        sale_product = get_object_or_404(SaleProduct, pk=sale_product_pk)  # SaleProduct 모델에서 해당 pk 객체 찾기, 없으면 404 반환
+        serializer = self.get_serializer(sale_product)
+        return Response(serializer.data)  # 시리얼라이즈된 데이터 반환
 
 
 # 가게별 떨이 상품 목록 조회
