@@ -45,7 +45,7 @@ class OrderCreateView(generics.CreateAPIView):
             400: "잘못된 요청입니다.",
             500: "서버 오류입니다."
         },
-        tags=["구매자"]
+        tags=["주문"]
     )
     def post(self, request, *args, **kwargs):
         data = request.data.copy() # 요청 본분 data 변수에 복사
@@ -88,7 +88,7 @@ class OrderLisetView(generics.ListAPIView):
             404: "구매자를 찾을 수 없습니다.",
             500: "서버 오류입니다."
         },
-        tags=["구매자"],
+        tags=["주문"],
         manual_parameters=[
             openapi.Parameter('pk', openapi.IN_PATH, description="구매자의 ID", type=openapi.TYPE_INTEGER)
         ]
@@ -115,7 +115,7 @@ class OrderLisetView(generics.ListAPIView):
         404: "구매자 또는 주문을 찾을 수 없습니다.",
         500: "서버 오류입니다."
     },
-    tags=["구매자"],
+    tags=["주문"],
     manual_parameters=[
         openapi.Parameter('pk', openapi.IN_PATH, description="구매자의 ID", type=openapi.TYPE_INTEGER),
         openapi.Parameter('order_id', openapi.IN_PATH, description="주문의 ID", type=openapi.TYPE_INTEGER),
@@ -162,7 +162,7 @@ class SaleProductCateListView(generics.ListAPIView):
             400: "유효하지 않은 product_type입니다.",
             500: "서버 오류입니다."
         },
-        tags=["구매자"],
+        tags=["떨이상품"],
         manual_parameters=[
             openapi.Parameter('product_type', openapi.IN_PATH, description="상품 카테고리 타입", type=openapi.TYPE_STRING)
         ]
@@ -191,7 +191,7 @@ class SaleProductDetailView(generics.RetrieveAPIView):
             404: "해당 상품을 찾을 수 없습니다.",
             500: "서버 오류입니다."
         },
-        tags=["구매자"],
+        tags=["떨이상품"],
         manual_parameters=[
             openapi.Parameter('pk', openapi.IN_PATH, description="떨이 상품의 ID", type=openapi.TYPE_INTEGER)
         ]
@@ -217,7 +217,7 @@ class SaleProductStoreListView(generics.ListAPIView):
             404: "해당 가게를 찾을 수 없습니다.",
             500: "서버 오류입니다."
         },
-        tags=["구매자"],
+        tags=["떨이상품"],
         manual_parameters=[
             openapi.Parameter('pk', openapi.IN_PATH, description="가게의 ID", type=openapi.TYPE_INTEGER)
         ]
