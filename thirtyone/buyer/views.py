@@ -147,7 +147,6 @@ def cancel_order(request, pk, order_id):
     return Response(serializer.errors, status=400)
         
 
-
 # 카테고리별 떨이 상품 목록 조회
 class SaleProductCateListView(generics.ListAPIView):
     serializer_class = SaleProductListSerializer

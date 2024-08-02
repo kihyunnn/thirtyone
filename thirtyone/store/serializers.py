@@ -18,7 +18,7 @@ class CreateSaleProductSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = SaleProduct
-        fields = ['photo', 'name', 'product_type', 'price', 'sale_price', 'amount', 'content']
+        fields = ['id', 'photo', 'name', 'product_type', 'price', 'sale_price', 'amount', 'content']
 
 
     def save(self, **kwargs): # save 함수 오버라이딩
@@ -46,7 +46,6 @@ class CreateSaleProductSerializer(serializers.ModelSerializer):
     #     if obj.photo and hasattr(obj.photo, 'url'):
     #         return request.build_absolute_uri(obj.photo.url)
     #     return None
-
 
 # 가게 목록 조회
 class StoreMapListSerializer(serializers.ModelSerializer):
