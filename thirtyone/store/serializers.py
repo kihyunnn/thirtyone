@@ -14,6 +14,7 @@ class StoreSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 class CreateSaleProductSerializer(serializers.ModelSerializer):
+    #photo_url = serializers.SerializerMethodField()
 
     class Meta:
         model = SaleProduct
@@ -38,6 +39,23 @@ class CreateSaleProductSerializer(serializers.ModelSerializer):
         else: # 원래 있던 경우는 누적합으로
             sale_record.amount += sale_product.amount
         sale_record.save()
+
+    # 안쓰는거여서 일단 주석처리 해둠
+    # def get_image_url(self, obj):
+    #     request = self.context.get('request')
+    #     if obj.photo and hasattr(obj.photo, 'url'):
+    #         return request.build_absolute_uri(obj.photo.url)
+    #     return None
+
+
+# 가게 목록 조회
+class StoreMapListSerializer(serializers.ModelSerializer):
+    sale_products = CreateSaleProductSerializer(many=True, read_only=True, source='saleproduct_set')
+    # 해당 가게에 있는 떨이 상품 목록
+
+    class Meta:
+        model = Store
+        fields = '__all__'
 
 class OrderSerializer(serializers.ModelSerializer):
     sale_product_name = serializers.CharField(source='sale_product.name', read_only=True)

@@ -88,7 +88,7 @@ class SaleRecord(models.Model):
     sale_product = models.ForeignKey(SaleProduct, on_delete=models.CASCADE)
 
     def __str__(self):
-        return f'{self.sale_product.name} - {self.date}'    
+        return f'{self.sale_product.store} - {self.sale_product.name} - {self.date}'    
 
 
 #주문 모델 Order
