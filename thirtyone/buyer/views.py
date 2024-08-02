@@ -143,7 +143,10 @@ def cancel_order(request, pk, order_id):
     except Order.DoesNotExist:
         return Response({"error": "Order not found"}, status=404)
 
-    serializer = OrderCancelSerializer(order, data=request.data, partial=True)
+    data_par = {
+        'buy_step':'CAN'
+    }
+    serializer = OrderCancelSerializer(order, data=data_par, partial=True)
     if serializer.is_valid():
         sale_product_name = order.sale_product
         store_name = order.store
