@@ -77,6 +77,8 @@ class OrderCreateView(generics.CreateAPIView):
 # 주문서 리스트 조회
 class OrderLisetView(generics.ListAPIView):
     serializer_class = OrderListSerializer
+    queryset = Order.objects.none()  # 기본 빈 쿼리셋 설정
+
     @swagger_auto_schema(
         operation_description="특정 구매자의 주문서 리스트를 조회합니다.",
         operation_summary="주문서 리스트 조회",
@@ -92,11 +94,15 @@ class OrderLisetView(generics.ListAPIView):
         ]
     )
     def get(self, request, *args, **kwargs):
-        # Swagger 스키마 생성 중일 때는 빈 쿼리셋 반환
-        if getattr(self, 'swagger_fake_view', False):
-            return SaleProduct.objects.none()
+        return super().get(request, *args, **kwargs)
+
+    def get_queryset(self):
+        if getattr(self, 'swagger_fake_view', False):  # Swagger 스키마 생성 중일 때 빈 쿼리셋 반환
+            return Order.objects.none()
         
-        buyer_pk = self.kwargs.get('pk')  # URL에서 구매자 pk 가져오기, pk가 없는경우 none을 반환하여 오류 막음
+        buyer_pk = self.kwargs.get('pk')  # URL에서 구매자 pk 가져오기
+        if buyer_pk is None:
+            return Order.objects.none()
         return Order.objects.filter(buyer__id=buyer_pk)
 
 @swagger_auto_schema(
