@@ -151,7 +151,7 @@ def cancel_order(request, pk, order_id):
 # 카테고리별 떨이 상품 목록 조회
 class SaleProductCateListView(generics.ListAPIView):
     serializer_class = SaleProductListSerializer
-
+    queryset = Order.objects.none()  # 기본 빈 쿼리셋 설정
     # 유효한 product_type 값 정의
     VALID_PRODUCT_TYPES = ['FRV', 'BUT', 'BAK', 'SID', 'SEA', 'RIC', 'SNA']
     @swagger_auto_schema(
@@ -167,8 +167,9 @@ class SaleProductCateListView(generics.ListAPIView):
             openapi.Parameter('product_type', openapi.IN_PATH, description="상품 카테고리 타입", type=openapi.TYPE_STRING)
         ]
     )
-
     def get(self, request, *args, **kwargs):
+        return super().get(request, *args, **kwargs)
+    def get_queryset(self):
         # Swagger 스키마 생성 중일 때는 빈 쿼리셋 반환
         if getattr(self, 'swagger_fake_view', False):
             return SaleProduct.objects.none()
@@ -207,7 +208,7 @@ class SaleProductDetailView(generics.RetrieveAPIView):
 # 가게별 떨이 상품 목록 조회
 class SaleProductStoreListView(generics.ListAPIView):
     serializer_class = SaleProductListSerializer
-    
+    queryset = Order.objects.none()  # 기본 빈 쿼리셋 설정
     @swagger_auto_schema(
         operation_description="특정 가게의 떨이 상품 목록을 조회합니다.",
         operation_summary="가게별 떨이 상품 목록 조회",
@@ -222,6 +223,8 @@ class SaleProductStoreListView(generics.ListAPIView):
         ]
     )
     def get(self, request, *args, **kwargs):
+        return super().get(request, *args, **kwargs)    
+    def get_queryset(self): #오버라이딩
         # Swagger 스키마 생성 중일 때는 빈 쿼리셋 반환
         if getattr(self, 'swagger_fake_view', False):
             return SaleProduct.objects.none()
@@ -238,6 +241,21 @@ class SaleProductStoreListView(generics.ListAPIView):
     
 # 검색 기능
 class SearchView(generics.ListAPIView):
+    @swagger_auto_schema(
+        operation_description="가게 이름, 타입 또는 떨이 상품 이름으로 검색 결과를 반환합니다.",
+        operation_summary="검색 결과",
+        responses={
+            200: openapi.Response('검색 결과를 성공적으로 반환했습니다.', StoreListSerializer(many=True)),
+            404: "검색 결과가 없습니다.",
+            500: "서버 오류입니다."
+        },
+        tags=["구매자"],
+        manual_parameters=[
+            openapi.Parameter('q', openapi.IN_QUERY, description="검색어", type=openapi.TYPE_STRING)
+        ]
+    )
+    def get(self, request, *args, **kwargs):
+        return super().get(request, *args, **kwargs)    
     
     def get_queryset(self):
         if getattr(self, 'swagger_fake_view', False):
