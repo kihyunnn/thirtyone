@@ -5,24 +5,24 @@ from .models import *
 
 # 어드민에서 주문서에서 세부 내역 더 보고싶어서 추가함
 class OrderAdmin(admin.ModelAdmin):
-    list_display = ('order_number', 'created_at','accept_at', 'store', 'buyer', 'buy_step')
+    list_display = ('pk','sale_product','order_number', 'buy_step','created_at','accept_at', 'store', 'buyer','amount' )
 
 admin.site.register(Order, OrderAdmin)
 
-# Store 모델을 admin 페이지에 등록하고, list_display 옵션을 추가하여 코드도 볼 수 있도록 설정
+# ㅍ나매자
 class StoreAdmin(admin.ModelAdmin):
-    list_display = ('name', 'code', 'address', 'open_time', 'close_time', 'tel')
+    list_display = ('pk','name', 'code', 'address', 'open_time', 'close_time', 'tel')
 
 admin.site.register(Store, StoreAdmin)
 
-
+#떨이 상품
 class SaleProductAdmin(admin.ModelAdmin):
-    list_display = ('store', 'name', 'amount', 'price', 'sale_price', 'content', 'product_type')
+    list_display = ('pk','store', 'name', 'amount', 'price', 'sale_price', 'content', 'product_type')
 
 admin.site.register(SaleProduct, SaleProductAdmin)
 
-
+# 떨이 실적
 class SaleRecordAdmin(admin.ModelAdmin):
-    list_display = ('sale_product', 'date', 'amount', 'selled_amount')
+    list_display = ('pk','sale_product', 'date', 'amount', 'selled_amount')
 
 admin.site.register(SaleRecord, SaleRecordAdmin)
