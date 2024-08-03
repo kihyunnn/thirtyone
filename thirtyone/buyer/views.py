@@ -165,7 +165,7 @@ class SaleProductCateListView(generics.ListAPIView):
     serializer_class = SaleProductListSerializer
     queryset = Order.objects.none()  # 기본 빈 쿼리셋 설정
     # 유효한 product_type 값 정의
-    VALID_PRODUCT_TYPES = ['FRV', 'BUT', 'BAK', 'SID', 'SEA', 'RIC', 'SNA']
+    VALID_PRODUCT_TYPES = ['BAK', 'BUT', 'FRU', 'VEG', 'SID', 'ETC']
     @swagger_auto_schema(
         operation_description="카테고리별 떨이 상품 목록을 조회합니다.",
         operation_summary="카테고리별 떨이 상품 목록 조회",
