@@ -1,6 +1,6 @@
 import datetime
 from django.utils import timezone 
-from django.db.models import Q, Sum, F 
+from django.db.models import Q, Sum, F, FloatField, ExpressionWrapper
 from django.shortcuts import get_object_or_404, render
 from rest_framework.response import Response
 from rest_framework import generics, status
@@ -86,12 +86,12 @@ class SalesSummaryView(APIView):
 # 지난주 떨이 상품 판매 순위 조회
 class SelledRankListView(generics.ListAPIView):
     queryset = SaleRecord.objects.all()
-    serializer_class = SelledRankSerializer
+    serializer_class = TopSoldProductSerializer
     @swagger_auto_schema(
         operation_description="지난주 떨이 상품 판매 순위를 조회합니다.",
         operation_summary="지난주 떨이 상품 판매 순위 조회",
         responses={
-            200: openapi.Response('성공적으로 조회되었습니다.', SelledRankSerializer(many=True)),
+            200: openapi.Response('성공적으로 조회되었습니다.', TopSoldProductSerializer(many=True)),
             400: "잘못된 요청입니다.",
             404: "가게를 찾을 수 없습니다.",
             500: "서버 오류입니다."
@@ -118,8 +118,31 @@ class SelledRankListView(generics.ListAPIView):
         last_week_sunday = last_week_monday + datetime.timedelta(days=6)
         
         store_pk = self.kwargs['pk'] # url에서 구매자 pk 가져오기
-        return SaleRecord.objects.filter(date__range=(last_week_monday, last_week_sunday),sale_product__store__id=store_pk, selled_amount__gt=0).order_by('-selled_amount')[:5]
-        # 조건 : 저번주 월욜~ 일욜 / url에 pk와 같은 떨이상품 pk를 가지고있는 SaleRecord / seeld_amount가 양수일것 / 오름차순 정렬 / 5개까지만 반환
+        last_week_sales = SaleRecord.objects.filter(
+        date__gte = last_week_monday,
+        date__lte = last_week_sunday,
+        sale_product__store__id=store_pk
+        ).values('sale_product').annotate(total_selled=Sum('selled_amount')).order_by('-total_selled')[:5]
+        
+        return last_week_sales
+
+    def list(self, request, *args, **kwargs):
+        queryset = self.get_queryset()
+        
+        # SaleProduct 인스턴스 가져오기 및 직렬화
+        sale_product_ids = [sale['sale_product'] for sale in queryset]
+        sale_products = SaleProduct.objects.filter(id__in=sale_product_ids)
+        
+        # 각 상품에 대한 정보를 직렬화하고, total_selled 값을 추가
+        ranked_products = []
+        for sale_data in queryset:
+            product = next((p for p in sale_products if p.id == sale_data['sale_product']), None)
+            if product:
+                product_data = TopSoldProductSerializer(product).data
+                product_data['total_selled'] = sale_data['total_selled']
+                ranked_products.append(product_data)
+                
+        return Response(ranked_products)
 
 # 판매 추이 조회
 class SaleTrendListView(generics.ListAPIView):
@@ -172,3 +195,84 @@ class SaleTrendListView(generics.ListAPIView):
         data = serializer.data  # 시리얼라이즈된 데이터 가져오기
         print(data)  # 쿼리셋 확인
         return Response(data, status=status.HTTP_200_OK)
+
+
+
+@swagger_auto_schema(
+    method="get",
+    tags=["대시보드"],
+    operation_summary="가장 많이(적게), 떨이 등록대비 많이(적게) 팔린 상품",
+    operation_description="가장 많이(적게), 떨이 등록대비 많이(적게) 팔린 상품을 처리합니다.",
+    responses={
+        200: '성공'
+    }
+)
+@api_view(['GET'])
+def advice_product(request, store_pk):
+    # 현재 날짜 가져오기
+    today = datetime.datetime.now().date()
+    # 이번 주 월요일 계산
+    this_week_monday = today - datetime.timedelta(days=today.weekday())
+    # 지난주 월요일 계산
+    last_week_monday = this_week_monday - datetime.timedelta(days=7)
+    # 지난주 일요일 계산
+    last_week_sunday = last_week_monday + datetime.timedelta(days=6)
+
+    last_week_sales = SaleRecord.objects.filter(
+        date__gte = last_week_monday,
+        date__lte = last_week_sunday,
+        sale_product__store__id=store_pk
+    ).values('sale_product').annotate(total_selled=Sum('selled_amount')).order_by('-total_selled')
+    # 지난주 월-일: 팔린 수량의 총합으로 많은순으로 정렬
+    most_sold_product = last_week_sales.first() # 가장 많이 팔린 상품
+    least_sold_product = last_week_sales.last() # 가장 적게 팔린 상품
+
+    # 각 sale_product의 SaleProduct 인스턴스 가져오기
+    most_sold_product_instance = SaleProduct.objects.get(pk=most_sold_product['sale_product'])
+    least_sold_product_instance = SaleProduct.objects.get(pk=least_sold_product['sale_product'])
+
+    # 각 상품에 대한 정보를 직렬화하고, total_selled 값을 추가
+    most_sold_product_data = AdviceSaleProductSerializer(most_sold_product_instance).data
+    most_sold_product_data['total_selled'] = most_sold_product['total_selled']
+
+    least_sold_product_data = AdviceSaleProductSerializer(least_sold_product_instance).data
+    least_sold_product_data['total_selled'] = least_sold_product['total_selled']
+
+
+    last_week_sales_based_post = SaleRecord.objects.filter(
+        date__gte = last_week_monday,
+        date__lte = last_week_sunday,
+        sale_product__store__id=store_pk
+    ).values('sale_product').annotate(
+        total_selled=Sum('selled_amount'),
+        total_posted=Sum('amount'),
+        selled_based_post=ExpressionWrapper(
+            (Sum('selled_amount') * 100.0) / Sum('amount'),
+            output_field=FloatField()
+        )
+    ).order_by('-selled_based_post')
+    # 떨이 등록 대비 가장 많이(적게) 팔린 상품들 정렬
+    most_based_post_product = last_week_sales_based_post.first()
+    least_based_post_product = last_week_sales_based_post.last()
+
+    most_based_post_instance = SaleProduct.objects.get(pk=most_based_post_product['sale_product'])
+    least_based_post_instance = SaleProduct.objects.get(pk=least_based_post_product['sale_product'])
+
+    most_sold_based_post_data = SelledAmountBasedPostSerializer(most_based_post_instance).data
+    most_sold_based_post_data['total_selled'] = most_based_post_product['total_selled']
+    most_sold_based_post_data['total_posted'] = most_based_post_product['total_posted']
+    most_sold_based_post_data['percent_selled'] = most_based_post_product['selled_based_post']
+
+    least_sold_based_post_data = SelledAmountBasedPostSerializer(least_based_post_instance).data
+    least_sold_based_post_data['total_selled'] = least_based_post_product['total_selled']
+    least_sold_based_post_data['total_posted'] = least_based_post_product['total_posted']
+    least_sold_based_post_data['percent_selled'] = least_based_post_product['selled_based_post']
+
+    response_data = {
+        "most_selled": most_sold_product_data,
+        "least_selled": least_sold_product_data,
+        "most_based_post": most_sold_based_post_data,
+        "least_based_post": least_sold_based_post_data,
+    }
+
+    return Response(response_data, status=200)
